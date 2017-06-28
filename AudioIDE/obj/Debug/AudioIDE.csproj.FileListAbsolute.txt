@@ -1,0 +1,15 @@
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\bin\Debug\AudioIDE.exe.config
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\bin\Debug\AudioIDE.exe
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\bin\Debug\AudioIDE.pdb
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\MainWindow.g.cs
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\App.g.cs
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\AudioIDE_MarkupCompile.cache
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\AudioIDE_MarkupCompile.lref
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\MainWindow.baml
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\AudioIDE.g.resources
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\AudioIDE.Properties.Resources.resources
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\AudioIDE.csproj.GenerateResource.Cache
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\AudioIDE.exe
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\AudioIDE.pdb
+C:\Users\Kree\Desktop\Modern General\Work\AudioIDE\AudioIDE\obj\Debug\AudioIDE.csprojResolveAssemblyReference.cache
