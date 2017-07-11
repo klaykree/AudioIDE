@@ -54,6 +54,12 @@ namespace AudioIDE
             {
                 MainScopeVisual.RemoveLastOperand();
             }
+
+            //DEBUG printing
+            if(e.Key == Key.D)
+            {
+                MainScopeVisual.WriteDebug();
+            }
         }
     }
 }

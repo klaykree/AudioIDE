@@ -71,11 +71,6 @@ namespace AudioIDE
             Width = ActualWidth;
         }
 
-        private void AddPoint(short InstructionValue)
-        {
-            Scope_.AddPoint(InstructionValue);
-        }
-
         private void Resize(Object sender, RoutedEventArgs e)
         {
             if(Scope_ == null)
@@ -93,7 +88,7 @@ namespace AudioIDE
 
             Children_.Clear();
 
-            List<Point> points = Scope_.Points();
+            List<Scope.ScopePoint> points = Scope_.Points();
 
             DrawingVisual BlackBackground = new DrawingVisual();
             Children_.Add(BlackBackground);
@@ -107,19 +102,43 @@ namespace AudioIDE
                 DrawingVisual visual = new DrawingVisual();
                 Children_.Add(visual);
 
-                Pen LinePen = new Pen(Brushes.LawnGreen, 1.15);
+                Pen LinePen;
+                if(i == 0 || i == points.Count - 1 || i == points.Count - 2) //Control points are blue
+                    LinePen = new Pen(Brushes.RoyalBlue, 1.15);
+                else
+                    LinePen = new Pen(Brushes.LawnGreen, 1.15);
+
                 using(DrawingContext dc = visual.RenderOpen())
                 {
-                    Point FirstPoint = points[i];
-                    Point SecondPoint = points[i + 1];
+                    Point FirstPoint = points[i].point;
+                    Point SecondPoint = points[i + 1].point;
                     dc.DrawLine(LinePen, FirstPoint, SecondPoint);
+
+                    if(points[i].EndPoint)
+                    {
+                        FirstPoint.X = SecondPoint.X;
+                        FirstPoint.Y = 0;
+                        SecondPoint.Y = ActualHeight;
+                        dc.DrawLine(new Pen(Brushes.LightSlateGray, 0.5), FirstPoint, SecondPoint);
+                    }
                 }
             }
         }
 
         private void FinishInstruction()
         {
-            Scope_.PositionPoints(Instructions_.LastInstruction().OperandValues().ToList());
+            Instruction Inst = Instructions_.LastInstruction();
+            List<short> Ys = Inst.OperandValues().ToList();
+            Scope_.PositionPoints(Ys);
+
+            Label[] Labels = Inst.DisplayLabels();
+            for(int i = 0 ; i < Inst.OperandCount() + 1; ++i)
+            {
+                double LabelHeight = Scope_.YPointPosition(Ys[i]);
+                Thickness Margin = Labels[i].Margin;
+                Margin.Top = LabelHeight;
+                Labels[i].Margin = Margin;
+            }
 
             Draw();
         }
@@ -152,22 +171,19 @@ namespace AudioIDE
             int PointCount = Scope_.Points().Count - 2;
 
             double HalfHeight = ActualHeight / 2;
-
-            double WidthMultiplyer = PointCount;
-            Instruction LastInst = Instructions_.LastInstruction();
-            if(LastInst != null)
-                WidthMultiplyer += LastInst.OperandCount() + 1;
-
-            return new Thickness(WidthMultiplyer * Scope.PointDistance_, HalfHeight, 0, 0);
+            
+            return new Thickness(PointCount * Scope.PointDistance_, HalfHeight, 0, 0);
         }
 
-        private Label CreateDragDropLabel(string Text)
+        private Label CreateDragDropLabel(String Text, short Value)
         {
             Label OPLabel = CreateLabel(Text);
 
             //Move the text label by changing its margin
             Thickness Margin = LastPointPosition();
+            Margin.Top = Scope_.YPointPosition(Value);
             Margin.Top -= (OPLabel.DesiredSize.Height / 2.0);
+            Margin.Left -= (OPLabel.DesiredSize.Width / 3.0);
             OPLabel.Margin = Margin;
 
             Grid FirstGridParent = Parent as Grid;
@@ -191,9 +207,9 @@ namespace AudioIDE
         }
 
         //Event fires on key up with the text box in focus
-        private void TextBoxEnterKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        private void TextBoxEnterKeyUp(object sender, KeyEventArgs e)
         {
-            if(e.Key == System.Windows.Input.Key.Enter)
+            if(e.Key == Key.Enter)
             {
                 TextBox NumericTextBox = sender as TextBox;
 
@@ -208,15 +224,17 @@ namespace AudioIDE
 
         private void AddImmediate(int ImmediateValue)
         {
-            Label DisplayLabel = CreateDragDropLabel(ImmediateValue.ToString());
+            short LowWord = (short)(ImmediateValue & 0xFFFF);
+            short HighWord = (short)(ImmediateValue >> 16);
 
-            short LowWord = (short)(ImmediateValue & 0xFF);
-            short HighWord = (short)(ImmediateValue >> 8);
-
-            Operand ImmediateLowWord = new Operand("[Constant]", EOperand.Immediate, LowWord, DisplayLabel);
+            Label DisplayLabelLow = CreateDragDropLabel(ImmediateValue.ToString() + "\n(" + LowWord + ")", LowWord);
+            
+            Operand ImmediateLowWord = new Operand("[Constant]", EOperand.Immediate, LowWord, DisplayLabelLow);
             AddOperand(ImmediateLowWord);
 
-            Operand ImmediateHighWord = new Operand("[Constant]", EOperand.Immediate, HighWord, DisplayLabel);
+            Label DisplayLabelHigh = CreateDragDropLabel(ImmediateValue.ToString() + "\n(" + HighWord + ")", HighWord);
+
+            Operand ImmediateHighWord = new Operand("[Constant]", EOperand.Immediate, HighWord, DisplayLabelHigh);
             AddOperand(ImmediateHighWord);
         }
 
@@ -224,7 +242,7 @@ namespace AudioIDE
         {
             bool InstructionCompleted = Instructions_.AddOp(Op.OP, Op.Type, Op.Value, Op.DisplayLabel);
 
-            Scope_.AddPoint(Op.Value);
+            Scope_.AddPoint(Op.Value, InstructionCompleted);
 
             if(InstructionCompleted)
             {
@@ -238,7 +256,7 @@ namespace AudioIDE
                 return;
 
             Label RemoveLabel = Instructions_.RemoveLastOperand();
-            
+
             Grid FirstGridParent = Parent as Grid;
             FirstGridParent.Children.Remove(RemoveLabel);
 
@@ -272,7 +290,7 @@ namespace AudioIDE
             }
             else
             {
-                Label DisplayLabel = CreateDragDropLabel(operand.OP);
+                Label DisplayLabel = CreateDragDropLabel(operand.OP, operand.Value);
                 operand.DisplayLabel = DisplayLabel;
                 
                 AddOperand(operand);
@@ -304,6 +322,23 @@ namespace AudioIDE
             }
 
             return Children_[index];
+        }
+
+        //DEBUG printing
+        public void WriteDebug()
+        {
+            StringBuilder Line = new StringBuilder();
+            foreach(Instruction Inst in Instructions_.CurrentInstructions_)
+            {
+                Line.Append(Inst.OperandCount() + 1);
+                Line.Append(" ");
+            }
+            Line.Append("(");
+            Line.Append(Scope_.Points().Count);
+            Line.Append(")");
+            Line.Append(" ");
+            Line.Append(Instructions_.LastInstruction().Finished);
+            ConsoleOut.AddLine(Line.ToString());
         }
     }
 }

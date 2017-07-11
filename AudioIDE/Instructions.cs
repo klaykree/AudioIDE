@@ -9,7 +9,7 @@ namespace AudioIDE
 {
     public class Instructions
     {
-        private List<Instruction> CurrentInstructions_ = new List<Instruction>();
+        public List<Instruction> CurrentInstructions_ = new List<Instruction>();
         private InstructionConstants InstructionConstants_ = new InstructionConstants();
 
         public int InstCount()
@@ -22,6 +22,7 @@ namespace AudioIDE
             if(CurrentInstructions_.Count == 0 || LastInstruction().Finished)
             {
                 CurrentInstructions_.Add(new Instruction());
+                ScopeVisual.ConsoleOut.AddLine("add new instruction");
             }
 
             if(Operand == "End")
@@ -73,9 +74,10 @@ namespace AudioIDE
 
         public Label RemoveLastOperand()
         {
-            Label RemoveLabel = LastInstruction().RemoveLastOperand();
+            Instruction LastInst = LastInstruction();
+            Label RemoveLabel = LastInst.RemoveLastOperand();
             
-            if(CurrentInstructions_.Count == 0)
+            if(LastInst.OperandCount() == -1)
             {
                 //Remove the empty instruction
                 CurrentInstructions_.RemoveAt(CurrentInstructions_.Count - 1);

@@ -47,16 +47,18 @@ namespace AudioIDE
                 Operation_ = Operand;
         }
 
-        //Returns the label of the operand if an operand was removed. Returns null otherwize
+        //Returns the label of the operand if an operand was removed. Returns null otherwise
         public Label RemoveLastOperand()
         {
+            Finished_ = false;
+
             if(Operands_.Count > 0)
             {
                 Label RemoveLabel = Operands_.Last().DisplayLabel;
                 Operands_.RemoveAt(Operands_.Count - 1);
                 return RemoveLabel;
             }
-
+            
             return null;
         }
 
@@ -109,7 +111,18 @@ namespace AudioIDE
 
             return Types;
         }
-        
+
+        public Label[] DisplayLabels()
+        {
+            Label[] Labels = new Label[Operands_.Count];
+            for(int i = 0 ; i < Operands_.Count ; ++i)
+            {
+                Labels[i] = Operands_[i].DisplayLabel;
+            }
+
+            return Labels;
+        }
+
         //Returns true if the instruction completes
         public bool TryFinish(InstructionConstants InstConsts)
         {
