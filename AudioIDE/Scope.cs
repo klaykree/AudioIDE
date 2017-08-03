@@ -97,6 +97,10 @@ namespace AudioIDE
                 return;
 
             Points_.RemoveAt(Points_.Count - 3);
+
+            Point SecondLast = Points_[Points_.Count - 2].point;
+            SecondLast.X -= PointDistance_;
+            Points_[Points_.Count - 2].point = SecondLast;
         }
 
         public void Resize(double NewMaxWidth, double NewMaxHeight)
@@ -106,7 +110,6 @@ namespace AudioIDE
             double HeightRatio = NewMaxHeight / MaxHeight_;
 
             Points_.Add(new ScopePoint(new Point(0, NewMaxHeight / 2.0)));
-            //Points_.Add(new Point(PointDistance_, NewMaxHeight / 2.0));
 
             for(int i = 0 ; i < InitalPointSize - 3 ; ++i)
             {

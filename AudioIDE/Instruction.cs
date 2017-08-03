@@ -163,6 +163,10 @@ namespace AudioIDE
                     Finished_ = true;
                 }
             }
+            else if(Operation_ == "End")
+            {
+                Finished_ = true;
+            }
             
             return Finished_;
         }

@@ -31,29 +31,32 @@ namespace AudioIDE
         private VisualCollection Children_;
         private Scope Scope_;
         private Instructions Instructions_;
-        public static ConsoleOutput ConsoleOut;
+        public static ConsoleOutput ConsoleOut = null;
 
         public ScopeVisual()
         {
             Children_ = new VisualCollection(this);
             Instructions_ = new Instructions();
-
-            SizeChanged += Resize;
-
-            PreviewDrop += DropItem;
-            PreviewDragOver += DragItem;
-            PreviewDragEnter += DragEnterItem;
         }
 
         public void Init()
         {
-            Scope_ = new Scope(ActualWidth, ActualHeight);
+            Grid FirstGridParent = Parent as Grid;
 
-            ColorRect BlackScopeBackground = new ColorRect(Brushes.Black, null, new Rect(0, 0, ActualWidth, ActualHeight));
+            FirstGridParent.SizeChanged += Resize;
+            FirstGridParent.PreviewDrop += DropItem;
+            FirstGridParent.PreviewDragOver += DragItem;
+            FirstGridParent.PreviewDragEnter += DragEnterItem;
 
+            MinWidth = FirstGridParent.ActualWidth;
+            Width = FirstGridParent.ActualWidth;
+            MinHeight = FirstGridParent.ActualHeight;
+            Height = FirstGridParent.ActualHeight;
+
+            Scope_ = new Scope(FirstGridParent.ActualWidth, FirstGridParent.ActualHeight);
+            
             Draw();
 
-            Grid FirstGridParent = Parent as Grid;
             ScrollViewer Scroll = FirstGridParent.Parent as ScrollViewer;
             Grid GridParent = Scroll.Parent as Grid;
 
@@ -67,8 +70,6 @@ namespace AudioIDE
                     break;
                 }
             }
-
-            Width = ActualWidth;
         }
 
         private void Resize(Object sender, RoutedEventArgs e)
@@ -76,8 +77,9 @@ namespace AudioIDE
             if(Scope_ == null)
                 return;
 
-            Scope_.Resize(ActualWidth, ActualHeight);
-
+            Grid FirstGridParent = Parent as Grid;
+            Scope_.Resize(FirstGridParent.ActualWidth, FirstGridParent.ActualHeight);
+            
             Draw();
         }
 
@@ -90,12 +92,13 @@ namespace AudioIDE
 
             List<Scope.ScopePoint> points = Scope_.Points();
 
-            DrawingVisual BlackBackground = new DrawingVisual();
+            /*DrawingVisual BlackBackground = new DrawingVisual();
             Children_.Add(BlackBackground);
             using(DrawingContext dc = BlackBackground.RenderOpen())
             {
-                dc.DrawRectangle(Brushes.Black, null, new Rect(0, 0, ActualWidth, ActualHeight));
-            }
+                Grid FirstGridParent = Parent as Grid;
+                dc.DrawRectangle(Brushes.Black, null, new Rect(0, 0, FirstGridParent.ActualWidth, FirstGridParent.ActualHeight));
+            }*/
 
             for(int i = 0 ; i < points.Count - 1 ; ++i)
             {
@@ -111,6 +114,7 @@ namespace AudioIDE
                 using(DrawingContext dc = visual.RenderOpen())
                 {
                     Point FirstPoint = points[i].point;
+
                     Point SecondPoint = points[i + 1].point;
                     dc.DrawLine(LinePen, FirstPoint, SecondPoint);
 
@@ -264,37 +268,42 @@ namespace AudioIDE
             Draw();
         }
 
-        private void DragEnterItem(object sender, DragEventArgs e)
+        public void DragOperand(Operand operand)
         {
-            Operand operand = (Operand)e.Data.GetData(typeof(Operand));
-
             if(operand.Type == EOperand.Immediate)
             {
-                TextBox test = new TextBox();
-                test.HorizontalAlignment = HorizontalAlignment.Left;
-                test.VerticalAlignment = VerticalAlignment.Top;
-                //test.VerticalContentAlignment = VerticalAlignment.Center;
-                //test.Width = 60;
-                //test.Height = 22;
+                TextBox ImmediateInput = new TextBox();
+                ImmediateInput.HorizontalAlignment = HorizontalAlignment.Left;
+                ImmediateInput.VerticalAlignment = VerticalAlignment.Top;
+                //ImmediateInput.VerticalContentAlignment = VerticalAlignment.Center;
+                //ImmediateInput.Width = 60;
+                //ImmediateInput.Height = 22;
                 Thickness Margin = LastPointPosition();
-                Margin.Top -= (test.FontSize / 2.0);
-                test.Margin = Margin;
-                
+                Margin.Top -= (ImmediateInput.FontSize / 2.0);
+                ImmediateInput.Margin = Margin;
+
                 Grid FirstGridParent = Parent as Grid;
-                FirstGridParent.Children.Add(test);
+                FirstGridParent.Children.Add(ImmediateInput);
 
-                test.PreviewTextInput += PreviewEnterText;
-                test.KeyUp += TextBoxEnterKeyUp;
+                ImmediateInput.PreviewTextInput += PreviewEnterText;
+                ImmediateInput.KeyUp += TextBoxEnterKeyUp;
 
-                test.Focus();
+                ImmediateInput.Focus();
             }
             else
             {
                 Label DisplayLabel = CreateDragDropLabel(operand.OP, operand.Value);
                 operand.DisplayLabel = DisplayLabel;
-                
+
                 AddOperand(operand);
             }
+        }
+
+        private void DragEnterItem(object sender, DragEventArgs e)
+        {
+            //Operand operand = (Operand)e.Data.GetData(typeof(Operand));
+
+            //DragOperand(operand);
         }
         
         private void DragItem(object sender, DragEventArgs e)
@@ -306,6 +315,8 @@ namespace AudioIDE
             if(e.Data.GetDataPresent(typeof(Operand)))
             {
                 Operand Op = (Operand)e.Data.GetData(typeof(Operand));
+
+                DragOperand(Op);
             }
         }
         
@@ -327,18 +338,18 @@ namespace AudioIDE
         //DEBUG printing
         public void WriteDebug()
         {
-            StringBuilder Line = new StringBuilder();
+            string DebugLine = "insts: " + Instructions_.InstCount().ToString();
+            DebugLine += " finished insts: ";
+            int FinishedInstructions = 0;
             foreach(Instruction Inst in Instructions_.CurrentInstructions_)
             {
-                Line.Append(Inst.OperandCount() + 1);
-                Line.Append(" ");
+                if(Inst.Finished)
+                    FinishedInstructions++;
             }
-            Line.Append("(");
-            Line.Append(Scope_.Points().Count);
-            Line.Append(")");
-            Line.Append(" ");
-            Line.Append(Instructions_.LastInstruction().Finished);
-            ConsoleOut.AddLine(Line.ToString());
+            DebugLine += FinishedInstructions;
+            DebugLine += " last value: ";
+            DebugLine += Instructions_.LastInstruction().OperandValues().Last().ToString();
+            ConsoleOut.AddLine(DebugLine);
         }
     }
 }

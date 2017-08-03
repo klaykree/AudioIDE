@@ -22,7 +22,6 @@ namespace AudioIDE
             if(CurrentInstructions_.Count == 0 || LastInstruction().Finished)
             {
                 CurrentInstructions_.Add(new Instruction());
-                ScopeVisual.ConsoleOut.AddLine("add new instruction");
             }
 
             if(Operand == "End")

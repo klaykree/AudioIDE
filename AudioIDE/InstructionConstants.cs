@@ -106,6 +106,9 @@ namespace AudioIDE
             AddOperationValue("If", 2, IfVarEql);
             AddOperationValue("For", 2, ForImm);
             AddOperationValue("For", 1, ForVar);
+
+            //AddOperationValue("End", 0, EndIf);
+            //AddOperationValue("End", 0, EndFor);
         }
         
         private void SetDefaultOrders()
@@ -149,6 +152,11 @@ namespace AudioIDE
             CompilerOrderIndexes_.Add(IfVarEql, new List<byte>() { 0, 1, 2 });
             CompilerOrderIndexes_.Add(ForImm, new List<byte>() { 0, 1, 2 });
             CompilerOrderIndexes_.Add(ForVar, new List<byte>() { 0, 1 });
+
+            //IDEOrders_.Add(EndIf, new List<EOperand>() { EOperand.Operation });
+            //IDEOrders_.Add(EndFor, new List<EOperand>() { EOperand.Operation });
+            //CompilerOrderIndexes_.Add(EndIf, new List<byte>() { 0 });
+            //CompilerOrderIndexes_.Add(EndFor, new List<byte>() { 0 });
         }
 
         public bool ValidInstruction(short InstOperation, List<EOperand> Operands)

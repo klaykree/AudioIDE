@@ -61,5 +61,23 @@ namespace AudioIDE
                 MainScopeVisual.WriteDebug();
             }
         }
+
+        private void Scope_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if(e.Delta < 0) //Scroll down
+            {
+                if(ScopeScrollViewer.HorizontalOffset + e.Delta > 0)
+                    ScopeScrollViewer.ScrollToHorizontalOffset(ScopeScrollViewer.HorizontalOffset + e.Delta);
+                else
+                    ScopeScrollViewer.ScrollToLeftEnd();
+            }
+            else
+            {
+                if(ScopeScrollViewer.ExtentWidth > ScopeScrollViewer.HorizontalOffset + e.Delta)
+                    ScopeScrollViewer.ScrollToHorizontalOffset(ScopeScrollViewer.HorizontalOffset + e.Delta);
+                else
+                    ScopeScrollViewer.ScrollToRightEnd();
+            }
+        }
     }
 }

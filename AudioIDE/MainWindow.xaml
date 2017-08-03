@@ -16,10 +16,9 @@
             <RowDefinition Height="20*"/>
         </Grid.RowDefinitions>
 
-        <ScrollViewer VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible">
-            <Grid Grid.Column="0" Grid.Row="0">
-                <local:ScopeVisual x:Name="MainScopeVisual" AllowDrop="True">
-                </local:ScopeVisual>
+        <ScrollViewer x:Name="ScopeScrollViewer" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Visible" Mouse.PreviewMouseWheel="Scope_PreviewMouseWheel">
+            <Grid Grid.Column="0" Grid.Row="0" Background="Black" AllowDrop="True">
+                <local:ScopeVisual x:Name="MainScopeVisual" HorizontalAlignment="Left" Width="580"/>
             </Grid>
         </ScrollViewer>
         <local:ConsoleOutput x:Name="ConsoleOut" Grid.Column="0" Grid.Row="1" VerticalAlignment="Bottom"/>
@@ -51,6 +50,10 @@
             <TabItem Header="Variables">
                 <local:VariableList FontSize="15">
                 </local:VariableList>
+            </TabItem>
+            <TabItem Header="Comments">
+                <TextBox FontSize="15" AcceptsReturn="True">
+                </TextBox>
             </TabItem>
         </TabControl>
     </Grid>
