@@ -338,18 +338,6 @@ namespace AudioIDE
         //DEBUG printing
         public void WriteDebug()
         {
-            string DebugLine = "insts: " + Instructions_.InstCount().ToString();
-            DebugLine += " finished insts: ";
-            int FinishedInstructions = 0;
-            foreach(Instruction Inst in Instructions_.CurrentInstructions_)
-            {
-                if(Inst.Finished)
-                    FinishedInstructions++;
-            }
-            DebugLine += FinishedInstructions;
-            DebugLine += " last value: ";
-            DebugLine += Instructions_.LastInstruction().OperandValues().Last().ToString();
-            ConsoleOut.AddLine(DebugLine);
         }
     }
 }
